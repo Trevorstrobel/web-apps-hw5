@@ -4,7 +4,7 @@ from flask import Flask, request, render_template
 import psycopg2
 import csv
 from string import Template
-
+import util
 
 # create a Flask instance
 app = Flask(__name__)
@@ -72,8 +72,8 @@ def getCountries():
 
 #this one route is able to take care of all needed requests. 
 # specify the group number and optionally, a country. 
-@app.route('/getGroup/<int:groupNum>/<str:country>')
-def getGroup(groupNum, country = None):
+@app.route('/getGroup/<int:groupNum>/<string:country>')
+def getGroup(groupNum, country = ""):
     conn = connect()
     cur = conn.cursor()
     
@@ -99,7 +99,7 @@ def getGroup(groupNum, country = None):
     SQL_QUERY = SQL_QUERY.substitute(age = age, gender = gender)
 
     #if country is specified, add that qualifier to the string
-    if (country != None):
+    if (country != ""):
         countryStr = Template(" AND country LIKE '$country'")
         SQL_QUERY = SQL_QUERY + countryStr.substitute(country = country)
 
@@ -108,7 +108,16 @@ def getGroup(groupNum, country = None):
 
     #execute and return the query results
     cur.execute(SQL_QUERY)
-    return cur.fetchall()
+    data = cur.fetchall()
+    
+    #if data returned is greater than 10 entries, split it into 3 groups using the 
+    # functions from util
+    if(len(data) > 10):
+        labels = util.cluster_user_data(data)
+        
+        data = util.split_user_data(data, labels)
+        print("Data Length: " + str(len(data)))
+        print(data)
 
 
 # default page for 404 error
@@ -134,6 +143,7 @@ if __name__ == '__main__':
 # app.debug = True
     #create and populate table
     createTable()
+    getGroup(1, 'USA')
     ip = '127.0.0.1'
     app.run(host=ip)
 
