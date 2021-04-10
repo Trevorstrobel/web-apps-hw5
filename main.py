@@ -103,10 +103,11 @@ def getGroup(groupNum, country = None):
         countryStr = Template(" AND country LIKE '$country'")
         SQL_QUERY = SQL_QUERY + countryStr.substitute(country = country)
 
+    #add the line terminator
     SQL_QUERY = SQL_QUERY + ";"
 
+    #execute and return the query results
     cur.execute(SQL_QUERY)
-
     return cur.fetchall()
 
 
