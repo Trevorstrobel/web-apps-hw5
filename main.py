@@ -93,14 +93,14 @@ def getGroup(groupNum, country = None):
     else:
         gender = opsList[3]
 
-    SQL_QUERY = Template("SELECT * FROM not_alone WHERE age = $age AND gender = '$gender'")
+    SQL_QUERY = Template("SELECT * FROM not_alone WHERE age $age AND gender = '$gender'")
     
 
     SQL_QUERY = SQL_QUERY.substitute(age = age, gender = gender)
 
     #if country is specified, add that qualifier to the string
     if (country != None):
-        countryStr = Template(" AND country = '$country'")
+        countryStr = Template(" AND country LIKE '$country'")
         SQL_QUERY = SQL_QUERY + countryStr.substitute(country = country)
 
     SQL_QUERY = SQL_QUERY + ";"
