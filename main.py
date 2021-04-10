@@ -3,6 +3,7 @@
 from flask import Flask, request, render_template
 import psycopg2
 import csv
+from string import Template
 
 
 # create a Flask instance
@@ -14,17 +15,7 @@ connInfo = "host=localhost dbname=hw5db user=admin5 password='web_apps'"
 #SQL Strings
 SQL_TABLE_CREATE = "CREATE TABLE not_alone (	Index INT ,	Country VARCHAR(20) ,	Age INT ,	Gender VARCHAR(30) ,	Fear INT ,	Anxiety INT , Angry INT, Happy INT , Sad INT , Which_Emotion TEXT , Feel TEXT , Most_Meaning TEXT , Occupation TEXT ,  	PRIMARY KEY (Index));"
 
-SQL_GROUP1 = "SELECT * FROM not_alone WHERE age <= 35 AND gender = 'Male';"
-SQL_GROUP1_SORT = "SELECT * FROM not_alone WHERE age <= 35 AND gender = 'Male' ORDER BY country;"
 
-SQL_GROUP2 = "SELECT * FROM not_alone WHERE age >=36 AND gender = 'Male';"
-SQL_GROUP2_SORT = "SELECT * FROM not_alone WHERE age >=36 AND gender = 'Male' ORDER BY country;"
-
-SQL_GROUP3 = "SELECT * FROM not_alone WHERE age <=35 AND gender = 'Female';"
-SQL_GROUP3_SORT = "SELECT * FROM not_alone WHERE age <=35 AND gender = 'Female' ORDER BY country;"
-
-SQL_GROUP4 = "SELECT * FROM not_alone WHERE age >= 36 AND gender = 'Female';"
-SQL_GROUP4_SORT = "SELECT * FROM not_alone WHERE age >= 36 AND gender = 'Female' ORDER BY country;"
 
 
 #database connection
@@ -68,61 +59,55 @@ def createTable():
 def index():
     return render_template('index.html')
 
-
-
-#pass a boolean value. if true, its sorted on country 
-#If 0, then its sorted on index
-#returns group 1
-@app.route('/group1/<bool:sort>')
-def group1(sort):
+#This route returns all unique countries in the DB.
+@app.route('/getCountries')
+def getCountries():
     conn = connect()
     cur = conn.cursor()
-    if (sort == True):
-        cur.execute(SQL_GROUP1_SORT)
+
+    SQL_QUERY = "SELECT DISTINCT country FROM not_alone;"
+
+    cur.execute(SQL_QUERY)
+    return cur.fetchall()
+
+#this one route is able to take care of all needed requests. 
+# specify the group number and optionally, a country. 
+@app.route('/getGroup/<int:groupNum>/<str:country>')
+def getGroup(groupNum, country = None):
+    conn = connect()
+    cur = conn.cursor()
+    
+    #chooses the correct variables for SQL query
+    
+    age = None
+    gender = None
+    opsList = [">= 36", "<= 35", "Male", "Female"]
+
+    if(groupNum % 2 == 0):
+        age = opsList[0]
     else:
-        cur.execute(SQL_GROUP1)
-    return cur.fetchall()
+        age = opsList[1]
 
-#pass a boolean value. if true, its sorted on country
-#If 0, then its sorted on index
-#returns group 2
-@app.route('/group2/<bool:sort>')
-def group2(sort):
-    conn = connect()
-    cur = conn.cursor()
-    if(sort == True):
-        cur.execute(SQL_GROUP2_SORT)
+    if(groupNum < 3 ):
+        gender = opsList[2]
     else:
-        cur.execute(SQL_GROUP2)
+        gender = opsList[3]
+
+    SQL_QUERY = Template("SELECT * FROM not_alone WHERE age = $age AND gender = '$gender'")
+    
+
+    SQL_QUERY = SQL_QUERY.substitute(age = age, gender = gender)
+
+    #if country is specified, add that qualifier to the string
+    if (country != None):
+        countryStr = Template(" AND country = '$country'")
+        SQL_QUERY = SQL_QUERY + countryStr.substitute(country = country)
+
+    SQL_QUERY = SQL_QUERY + ";"
+
+    cur.execute(SQL_QUERY)
+
     return cur.fetchall()
-
-#pass a boolean value. if true, its sorted on country
-#If 0, then its sorted on index
-#returns group 3
-@app.route('/group3/<bool:sort>')
-def group3(sort):
-    conn = connect()
-    cur = conn.cursor()
-    if(sort == True):
-        cur.execute(SQL_GROUP3_SORT)
-    else:    
-        cur.execute(SQL_GROUP3)
-    return cur.fetchall()
-
-#pass a boolean value. if true, its sorted on country
-#If 0, then its sorted on index
-#returns group 4
-@app.route('/group4/<bool:sort>')
-def group4(sort):
-    conn = connect()
-    cur = conn.cursor()
-    if(sort == True):
-        cur.execute(SQL_GROUP4_SORT)
-    else:
-        cur.execute(SQL_GROUP4)
-    return cur.fetchall()
-
-
 
 
 # default page for 404 error
