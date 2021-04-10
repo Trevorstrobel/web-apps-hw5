@@ -1,11 +1,9 @@
-import os
+
+
 from flask import Flask, request, render_template
-from flask_sqlalchemy import SQLAlchemy
 import psycopg2
 import csv
 
-# get current app directory
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 # create a Flask instance
 app = Flask(__name__)
@@ -15,6 +13,18 @@ connInfo = "host=localhost dbname=hw5db user=admin5 password='web_apps'"
 
 #SQL Strings
 SQL_TABLE_CREATE = "CREATE TABLE not_alone (	Index INT ,	Country VARCHAR(20) ,	Age INT ,	Gender VARCHAR(30) ,	Fear INT ,	Anxiety INT , Angry INT, Happy INT , Sad INT , Which_Emotion TEXT , Feel TEXT , Most_Meaning TEXT , Occupation TEXT ,  	PRIMARY KEY (Index));"
+
+SQL_GROUP1 = "SELECT * FROM not_alone WHERE age <= 35 AND gender = 'Male';"
+SQL_GROUP1_SORT = "SELECT * FROM not_alone WHERE age <= 35 AND gender = 'Male' ORDER BY country;"
+
+SQL_GROUP2 = "SELECT * FROM not_alone WHERE age >=36 AND gender = 'Male';"
+SQL_GROUP2_SORT = "SELECT * FROM not_alone WHERE age >=36 AND gender = 'Male' ORDER BY country;"
+
+SQL_GROUP3 = "SELECT * FROM not_alone WHERE age <=35 AND gender = 'Female';"
+SQL_GROUP3_SORT = "SELECT * FROM not_alone WHERE age <=35 AND gender = 'Female' ORDER BY country;"
+
+SQL_GROUP4 = "SELECT * FROM not_alone WHERE age >= 36 AND gender = 'Female';"
+SQL_GROUP4_SORT = "SELECT * FROM not_alone WHERE age >= 36 AND gender = 'Female' ORDER BY country;"
 
 
 #database connection
@@ -52,12 +62,68 @@ def createTable():
 
     #commit changes to the db
     conn.commit()
+    conn.close()
 
 @app.route('/')
 def index():
-
-
     return render_template('index.html')
+
+
+
+#pass a boolean value. if true, its sorted on country 
+#If 0, then its sorted on index
+#returns group 1
+@app.route('/group1/<bool:sort>')
+def group1(sort):
+    conn = connect()
+    cur = conn.cursor()
+    if (sort == True):
+        cur.execute(SQL_GROUP1_SORT)
+    else:
+        cur.execute(SQL_GROUP1)
+    return cur.fetchall()
+
+#pass a boolean value. if true, its sorted on country
+#If 0, then its sorted on index
+#returns group 2
+@app.route('/group2/<bool:sort>')
+def group2(sort):
+    conn = connect()
+    cur = conn.cursor()
+    if(sort == True):
+        cur.execute(SQL_GROUP2_SORT)
+    else:
+        cur.execute(SQL_GROUP2)
+    return cur.fetchall()
+
+#pass a boolean value. if true, its sorted on country
+#If 0, then its sorted on index
+#returns group 3
+@app.route('/group3/<bool:sort>')
+def group3(sort):
+    conn = connect()
+    cur = conn.cursor()
+    if(sort == True):
+        cur.execute(SQL_GROUP3_SORT)
+    else:    
+        cur.execute(SQL_GROUP3)
+    return cur.fetchall()
+
+#pass a boolean value. if true, its sorted on country
+#If 0, then its sorted on index
+#returns group 4
+@app.route('/group4/<bool:sort>')
+def group4(sort):
+    conn = connect()
+    cur = conn.cursor()
+    if(sort == True):
+        cur.execute(SQL_GROUP4_SORT)
+    else:
+        cur.execute(SQL_GROUP4)
+    return cur.fetchall()
+
+
+
 
 # default page for 404 error
 @app.errorhandler(404)

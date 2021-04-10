@@ -5,20 +5,39 @@
 <!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
     <head>
+        <title>HW5 | CSCI4710</title>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     </head>
+    
+    
     <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-
-        <p>Tables go here</p>
-        
-        <script src="" async defer></script>
+        <h1>Show user data from backend</h1>
+        <!-- <p>{{column_names}}</p>
+        <p>{{data_part}}</p> -->
+    
+        <table class="table">
+            <thead>
+              <tr>
+                {% for item in column_html %}
+                    <th>{{item}}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in data_html %}
+                   <tr>
+                    {% for data in row %}
+                        <td>{{ data }}</td>
+                    {% endfor %}
+                   </tr>
+               {% endfor %}
+            </tbody>
+          </table>
+    
+    
     </body>
 </html>
